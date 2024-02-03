@@ -1,10 +1,11 @@
 import { nanoid } from "nanoid";
+import DataAccessError from "./DataAccessError.js";
 
 const postsPerUser = {};
 
 function createPost(username, post, dateTimePosted) {
   if (postsPerUser[username] === undefined) {
-    postsPerUser[username] = [];
+    throw new DataAccessError("User does not exist");
   }
 
   const createdPost = {
@@ -21,14 +22,13 @@ function createPost(username, post, dateTimePosted) {
 
 function getPostOfUser(username) {
   if (postsPerUser[username] === undefined) {
-    return [];
+    throw new DataAccessError("User does not exist");
   }
   return postsPerUser[username];
 }
 
 function getFeedOfUser(username, followingUsernames) {
   const feed = [...getPostOfUser(username)];
-  console.log(followingUsernames);
   for (const username of followingUsernames) {
     if (postsPerUser[username] !== undefined) {
       feed.push(...postsPerUser[username]);
@@ -52,7 +52,7 @@ function getPost(postId) {
 function likePost(username, postId) {
   const post = getPost(postId);
   if (post === undefined) {
-    throw Error("Post does not exist");
+    throw new DataAccessError("Post does not exist");
   }
   if (post.likes.includes(username)) {
     return post;
@@ -65,7 +65,7 @@ function likePost(username, postId) {
 function unlikePost(username, postId) {
   const post = getPost(postId);
   if (post === undefined) {
-    throw Error("Post does not exist");
+    throw new DataAccessError("Post does not exist");
   }
   if (!post.likes.includes(username)) {
     return post;
@@ -74,10 +74,15 @@ function unlikePost(username, postId) {
   return post;
 }
 
+function initializePosts(username) {
+  postsPerUser[username] = [];
+}
+
 export default {
   createPost,
   getPostOfUser,
   getFeedOfUser,
   likePost,
   unlikePost,
+  initializePosts,
 };

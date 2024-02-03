@@ -200,7 +200,23 @@ paths:
             description: Bad request.
           404:
             description: Post does not exist
-
+  /api/v1/users/:username/following:
+    get:
+      summary: Get following
+      description: Gets the usernames of the users that the logged in user is following
+      tags:
+        - Followers
+      responses:
+        200:
+          description: Following successfully fetched
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                examples:
+                  - ["joblipat", "jacoblee", "johnjoseph"]
   /api/v1/users/:username/following/:following:
     post:
       summary: Follow user

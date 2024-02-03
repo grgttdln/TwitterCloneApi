@@ -1,6 +1,13 @@
+import DataAccessError from "./DataAccessError.js";
+
 const users = {};
 
 function createUser(username) {
+  if (isExistingUser(username)) {
+    throw new DataAccessError(
+      `User with username '${username}' already exists`
+    );
+  }
   const user = {
     username,
     following: [],
@@ -9,11 +16,16 @@ function createUser(username) {
   return user;
 }
 
+function isExistingUser(username) {
+  return users[username] !== undefined;
+}
+
 function followUser(usernameOfFollower, usernameToFollow) {
   const user = users[usernameOfFollower];
   if (user === undefined) {
-    return null;
+    throw new DataAccessError(`${usernameOfFollower} does not exist`);
   }
+
   if (user.following.includes(usernameToFollow)) {
     return user;
   }
@@ -25,7 +37,7 @@ function followUser(usernameOfFollower, usernameToFollow) {
 function unfollowUser(usernameOfFollower, usernameToUnfollow) {
   const user = users[usernameOfFollower];
   if (user === undefined) {
-    return null;
+    throw new DataAccessError(`${usernameOfFollower} does not exist`);
   }
 
   user.following = user.following.filter(
@@ -37,7 +49,7 @@ function unfollowUser(usernameOfFollower, usernameToUnfollow) {
 function getFollowingUsernames(usernameOfFollower) {
   const user = users[usernameOfFollower];
   if (user === undefined) {
-    return [];
+    throw new DataAccessError(`${usernameOfFollower} does not exist`);
   }
   return user.following;
 }
