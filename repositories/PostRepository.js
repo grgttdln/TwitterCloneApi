@@ -1,10 +1,10 @@
 import { nanoid } from "nanoid";
 
-const posts = {};
+const postsPerUser = {};
 
 function createPost(username, post, dateTimePosted) {
-  if (posts[username] === undefined) {
-    posts[username] = [];
+  if (postsPerUser[username] === undefined) {
+    postsPerUser[username] = [];
   }
 
   const createdPost = {
@@ -15,47 +15,61 @@ function createPost(username, post, dateTimePosted) {
     likes: [],
   };
 
-  posts[username].push(createdPost);
+  postsPerUser[username].push(createdPost);
   return createdPost;
 }
 
 function getPostOfUser(username) {
-  if (posts[username] === undefined) {
+  if (postsPerUser[username] === undefined) {
     return [];
   }
-  return posts[username];
+  return postsPerUser[username];
 }
 
 function getFeedOfUser(username, followingUsernames) {
   const feed = [...getPostOfUser(username)];
   console.log(followingUsernames);
   for (const username of followingUsernames) {
-    if (posts[username] !== undefined) {
-      feed.push(...posts[username]);
+    if (postsPerUser[username] !== undefined) {
+      feed.push(...postsPerUser[username]);
     }
   }
   return feed;
 }
 
-function likePost(username, postId) {
-  const post = posts[username].find((post) => post.postId === postId);
-  if (post === undefined) {
-    return null;
+function getPost(postId) {
+  for (const [_, posts] of Object.entries(postsPerUser)) {
+    for (const post of posts) {
+      const currentPostId = post.postId;
+      if (currentPostId === postId) {
+        return post;
+      }
+    }
   }
+  return undefined;
+}
 
+function likePost(username, postId) {
+  const post = getPost(postId);
+  if (post === undefined) {
+    throw Error("Post does not exist");
+  }
   if (post.likes.includes(username)) {
     return post;
   }
   post.likes.push(username);
+  console.log(post);
   return post;
 }
 
 function unlikePost(username, postId) {
-  const post = posts[username].find((post) => post.postId === postId);
+  const post = getPost(postId);
   if (post === undefined) {
-    return null;
+    throw Error("Post does not exist");
   }
-
+  if (!post.likes.includes(username)) {
+    return post;
+  }
   post.likes = post.likes.filter((like) => like !== username);
   return post;
 }
